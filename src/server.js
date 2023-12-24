@@ -3,9 +3,11 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
-dotenv.config({ path: "../.env" });
+
+const authRoutes = require("./routes/auth");
 
 /* App Config */
+dotenv.config({ path: "../.env" });
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -13,8 +15,6 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-
-/* API Routes */
 
 /* MongoDB connection */
 mongoose.connect(process.env.MONGO_URI, {
@@ -32,6 +32,9 @@ db.once("open", () => {
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to MERN Book Keeper App.");
 });
+
+/* API Routes */
+app.use("/api/user", authRoutes);
 
 /* Port Listening In */
 app.listen(port, () => {

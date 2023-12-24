@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema(
   {
     name: {
@@ -34,18 +33,6 @@ const UserSchema = new mongoose.Schema(
       require: true,
       min: 6,
     },
-    activeTransactions: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "BookTransaction",
-      },
-    ],
-    prevTransactions: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "BookTransaction",
-      },
-    ],
     role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   {
