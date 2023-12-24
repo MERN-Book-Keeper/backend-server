@@ -1,8 +1,11 @@
 const express = require("express");
-const router = express.Router();
-const bcrypt = require("bcrypt");
-const User = require("../models/user");
 const dotenv = require("dotenv");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const User = require("../models/user");
+const router = express.Router();
+
 dotenv.config({ path: "../../.env" });
 
 router.post("/register", async (req, res) => {
@@ -51,14 +54,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       {
         userId: user._id,
-        name: user.name,
-        age: user.age,
-        gender: user.gender,
-        dob: user.dob,
-        contact: user.contact,
-        photo: user.photo,
         email: user.email,
-        role: user.role,
       },
       process.env.JWT_SECRET,
       {
@@ -66,7 +62,9 @@ router.post("/login", async (req, res) => {
       }
     );
 
-    res.status(200).json({ message: "Login successful", data: token });
+    res
+      .status(200)
+      .json({ message: "Login successful", token: token, data: user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
