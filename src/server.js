@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const swaggerUi = require("swagger-ui-express");
+const swaggerConfig = require("./configs/swaggerConfig");
 
 const authRoutes = require("./routes/auth");
 
@@ -32,6 +34,9 @@ db.once("open", () => {
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to MERN Book Keeper App.");
 });
+
+/* Swagger  */
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerConfig));
 
 /* API Routes */
 app.use("/api/user", authRoutes);
