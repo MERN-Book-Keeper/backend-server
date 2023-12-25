@@ -1,18 +1,17 @@
-/**
- * @swagger
- * tags:
- *   name: Authentication
- *
- */
-
 const express = require("express");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const router = express.Router();
-
 dotenv.config({ path: "../../.env" });
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *
+ */
 
 /**
  * @swagger
@@ -59,6 +58,14 @@ dotenv.config({ path: "../../.env" });
 
 router.post("/register", async (req, res) => {
   try {
+    // checking for already existing user
+    const userExist = await User.findOne({ email: req.body.email });
+    if (userExist) {
+      return res
+        .status(400)
+        .send("User with the same email id already exists!");
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
     const newUser = new User({
@@ -126,14 +133,14 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(400).json({ error: "User does not exist." });
     }
 
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(400).json({ error: "Invalid password" });
     }
 
     const token = jwt.sign(
@@ -143,13 +150,13 @@ router.post("/login", async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "24h", // Token expiration time
+        expiresIn: "1h", // Token expiration time
       }
     );
 
     res
-      .status(200)
-      .json({ message: "Login successful", token: token, user: user });
+      .header("Bearer", token)
+      .send({ message: "Login successful", token: token, user: user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
