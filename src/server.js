@@ -8,6 +8,7 @@ const swaggerConfig = require("./configs/swaggerConfig");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
 
@@ -44,6 +45,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerConfig));
 /* API Routes */
 app.use("/api/user", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/book", bookRoutes);
 app.use("/api/book/category", bookCategoryRoutes);
 
