@@ -6,8 +6,10 @@ const dotenv = require("dotenv");
 const swaggerUi = require("swagger-ui-express");
 const swaggerConfig = require("./configs/swaggerConfig");
 
-const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const bookRoutes = require("./routes/bookRoutes");
+const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
 
 /* App Config */
 dotenv.config({ path: "../.env" });
@@ -42,6 +44,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerConfig));
 /* API Routes */
 app.use("/api/user", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/book", bookRoutes);
+app.use("/api/book/category", bookCategoryRoutes);
 
 /* Port Listening In */
 app.listen(port, () => {
