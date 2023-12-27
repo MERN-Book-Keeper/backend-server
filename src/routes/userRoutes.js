@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const User = require("../models/user");
 const router = express.Router();
-const authUserPrivateRoute = require("../middlewares/authUserPrivateRoute");
+const authUserAdminPrivateRoute = require("../middlewares/authUserAdminPrivateRoute");
 dotenv.config({ path: "../../.env" });
 
 /**
@@ -30,7 +30,7 @@ dotenv.config({ path: "../../.env" });
  *         description: Bad request
  */
 
-router.get("/getAll", authUserPrivateRoute, async (req, res) => {
+router.get("/getAll", authUserAdminPrivateRoute, async (req, res) => {
   try {
     const users = await User.find({}).sort({ _id: -1 });
     res.status(200).json(users);
@@ -64,7 +64,7 @@ router.get("/getAll", authUserPrivateRoute, async (req, res) => {
  *         description: User not found
  */
 
-router.get("/get/:id", authUserPrivateRoute, async (req, res) => {
+router.get("/get/:id", authUserAdminPrivateRoute, async (req, res) => {
   try {
     const user = await User.findById(req?.params?.id);
     res.status(200).json(user);
@@ -121,7 +121,7 @@ router.get("/get/:id", authUserPrivateRoute, async (req, res) => {
  *         description: Internal Server Error
  */
 
-router.put("/edit/:id", authUserPrivateRoute, async (req, res) => {
+router.put("/edit/:id", authUserAdminPrivateRoute, async (req, res) => {
   try {
     // Find the user by ID
     const user = await User.findById(req.params.id);
@@ -193,47 +193,54 @@ router.put("/edit/:id", authUserPrivateRoute, async (req, res) => {
  *         description: Internal Server Error
  */
 
-router.put("/update/password/:id", authUserPrivateRoute, async (req, res) => {
-  try {
-    const { oldPassword, newPassword } = req.body;
+router.put(
+  "/update/password/:id",
+  authUserAdminPrivateRoute,
+  async (req, res) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
 
-    // Checking if the provided newPassword meets length requirements
-    if (!newPassword || newPassword.length < 6 || newPassword.length > 255) {
-      return res
-        .status(400)
-        .json({ error: "New password must be between 6 and 255 characters" });
+      // Checking if the provided newPassword meets length requirements
+      if (!newPassword || newPassword.length < 6 || newPassword.length > 255) {
+        return res
+          .status(400)
+          .json({ error: "New password must be between 6 and 255 characters" });
+      }
+
+      // Finding the user by ID
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Verifying if the old password matches the stored hashed password
+      const isOldPasswordValid = await bcrypt.compare(
+        oldPassword,
+        user.password
+      );
+      if (!isOldPasswordValid) {
+        return res.status(401).json({ error: "Old password is incorrect" });
+      }
+
+      // Generating a salt to be used in password hashing
+      const salt = await bcrypt.genSalt(10);
+
+      // Hashing the new password using bcrypt
+      const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+      // Updating the user's password in the database
+      const updatedUser = await User.findByIdAndUpdate(req.params.id, {
+        $set: { password: hashedNewPassword },
+      });
+
+      // If the update is successful, respond with a success message
+      res.status(200).json("Password has been updated");
+    } catch (err) {
+      // If there's an error during the update, respond with an error status and message
+      res.status(500).json({ error: err.message });
     }
-
-    // Finding the user by ID
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Verifying if the old password matches the stored hashed password
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
-    if (!isOldPasswordValid) {
-      return res.status(401).json({ error: "Old password is incorrect" });
-    }
-
-    // Generating a salt to be used in password hashing
-    const salt = await bcrypt.genSalt(10);
-
-    // Hashing the new password using bcrypt
-    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-
-    // Updating the user's password in the database
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, {
-      $set: { password: hashedNewPassword },
-    });
-
-    // If the update is successful, respond with a success message
-    res.status(200).json("Password has been updated");
-  } catch (err) {
-    // If there's an error during the update, respond with an error status and message
-    res.status(500).json({ error: err.message });
   }
-});
+);
 
 /**
  * @swagger
@@ -262,7 +269,7 @@ router.put("/update/password/:id", authUserPrivateRoute, async (req, res) => {
  *         description: Internal Server Error
  */
 
-router.delete("/delete/:id", authUserPrivateRoute, async (req, res) => {
+router.delete("/delete/:id", authUserAdminPrivateRoute, async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
 

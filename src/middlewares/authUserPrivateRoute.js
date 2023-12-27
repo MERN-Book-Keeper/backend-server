@@ -1,7 +1,8 @@
-/* User Authentication Middleware
+/**
+ * Normal User Authentication Middleware
  *
- * Verifies the user's authentication token and checks privileges to access routes.
- * Handles cases for both users and admins, setting user information in req.user when appropriate.
+ * Verifies the user's authentication token and grants access only to normal users.
+ * Sets user information in req.user for normal user access; otherwise, returns an error.
  *
  */
 
@@ -18,35 +19,17 @@ module.exports = async (req, res, next) => {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const requestingUser = await User.findById(decodedToken.userId);
 
-    // Check if the user role is admin
+    // Checking if the user role is not admin
     if (requestingUser.role === "admin") {
-      req.user = decodedToken; // Set user information in the request object
-      return next(); // Admin has access to everything
+      return res.status(401).send("Access denied! Admins are not allowed.");
     }
 
-    // If param id is not present and the user is not an admin
-    if (!req.params.id && requestingUser.role !== "admin") {
-      req.user = decodedToken; // Set user information in the request object
-      return res.status(401).send("Access denied! Only Admin have access.");
-    }
-
-    // If param id is present and not equal to decoded user ID
+    // Checking if the user ID in the params matches the ID in the token
     if (req.params.id && req.params.id !== decodedToken.userId) {
-      // If the route is for updating and the user is not found, handle it separately
-      if (req.path.includes("/edit/") || req.path.includes("/update/")) {
-        const userToUpdate = await User.findById(req.params.id);
-        if (!userToUpdate) {
-          return res.status(404).send("User not found");
-        }
-      } else {
-        return res
-          .status(401)
-          .send("Access denied! You can only access your own data.");
-      }
+      return res.status(401).send("Access denied! Different user.");
     }
 
-    // If none of the above conditions are met, allow access
-    req.user = decodedToken; // Set user information in the request object
+    req.user = decodedToken;
     next();
   } catch (err) {
     res.status(400).send("Invalid Token");

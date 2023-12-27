@@ -11,6 +11,7 @@ const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 /* App Config */
 dotenv.config({ path: "../.env" });
@@ -48,6 +49,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/book", bookRoutes);
 app.use("/api/book/category", bookCategoryRoutes);
+app.use("/api/transaction", transactionRoutes);
 
 /* Port Listening In */
 app.listen(port, () => {

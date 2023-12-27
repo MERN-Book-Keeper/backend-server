@@ -80,7 +80,9 @@ router.post("/add", authAdminPrivateRoute, async (req, res) => {
 
 router.get("/getAll", async (req, res) => {
   try {
-    const books = await Book.find({}).populate("category").sort({ _id: -1 });
+    const books = await Book.find({ isAvailable: true })
+      .populate("category")
+      .sort({ _id: -1 });
     res.status(200).json(books);
   } catch (err) {
     res.status(500).json({ error: err.message });

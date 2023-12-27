@@ -8,7 +8,7 @@ const BookTransactionTicketSchema = new mongoose.Schema({
     required: true,
   },
   transactionType: { type: String, enum: ["issue", "return"], required: true },
-  issueDate: { type: Date, required: true },
+  issueDate: { type: Date },
   returnDate: { type: Date },
   dueDate: { type: Date },
   status: {
@@ -16,7 +16,7 @@ const BookTransactionTicketSchema = new mongoose.Schema({
     enum: ["pending", "approved", "completed"],
     default: "pending",
   },
-  issuerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
 const TransactionTicket = mongoose.model(
